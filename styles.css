@@ -22,8 +22,7 @@
     left: 0;
     text-align: center;
     word-wrap: break-word;
-    width: auto;
-    min-width: 300px;
+    min-width: 220px;
     max-width: 450px;
     z-index: 1000000;
     line-height: 1.2;

@@ -40,7 +40,9 @@ initialize();
 function onMouseEnter(e) {
     var id = e.target.getAttribute('data-filewhat-id'),
         filename = e.target.getAttribute('data-filewhat-filename'),
+        repo_width = window.document.getElementsByClassName("repository-content")[0].offsetWidth,
         tooltipAction, url;
+    var tooltip_width = ((window.innerWidth - repo_width) / 2) - 10
 
     if (id === undefined) {
         return;
@@ -54,6 +56,7 @@ function onMouseEnter(e) {
 
     var tooltip = document.createElement('div');
     tooltip.className = 'filewhat';
+    tooltip.style.width = tooltip_width + 'px';
 
     tooltipAction.active = true;
     e.target.parentElement.appendChild(tooltip);

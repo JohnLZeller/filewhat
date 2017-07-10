@@ -100,40 +100,34 @@ function populateInfoTooltip(tooltipNode, filename, tooltipAction){
     var tooltipTemplate = [
         '<div class="filetype-header">',
         filename,
-        '</div>',
+        '</div><br>',
         '<div class="filetype-description">',
-            '<h5>Description</h5>',
             '<p>%filetype-description%</p>',
         '</div>'
     ].join('');
-
-    var descURL = chrome.runtime.getURL("descriptions/default.html");
+    var descURL = chrome.runtime.getURL("descriptions/" + filename + ".html"),
+        xmlhttp;
 
     tooltipNode.innerHTML = tooltipTemplate;
 
-    var xmlhttp = new XMLHttpRequest();
+    xmlhttp = new XMLHttpRequest();
     xmlhttp.open('GET', descURL, true);
-    xmlhttp.setRequestHeader('Content-Type', 'application/html');
 
     xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.status >= 400){
-            return populateErrorTooltip(tooltipNode);
+        var desc = 'No description found.';
+
+        if (xmlhttp.status < 400 && xmlhttp.responseText && xmlhttp.readyState == 4){
+            desc = xmlhttp.responseText;
         }
 
-        if (xmlhttp.responseText && xmlhttp.readyState == 4){
+        if (xmlhttp.readyState == 4) {
             tooltipNode.innerHTML = tooltipNode.innerHTML.replace(
-                '%filetype-description%', xmlhttp.responseText
+                '%filetype-description%', desc
             );
         }
     };
 
     xmlhttp.send(null);
-}
-
-function populateErrorTooltip(tooltipNode){
-    tooltipNode.innerHTML =
-        '<div>Error</div>' +
-        '<div>Opps, something went wrong :(</div>';
 }
 
 var callback = function(allmutations){

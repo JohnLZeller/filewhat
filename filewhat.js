@@ -1,73 +1,84 @@
-console.log('Filewhat initialized');
+var tooltips = new Map();
 
-var collection = new Map();
-
-function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
-function initialize(){
+function init(){
     var files = window.document.getElementsByClassName("octicon-file-text");
     Array.prototype.slice.call(files, 0).forEach(function (element) {
         var e = element.parentElement;
-        var isAlreadyInitialized = !!e.getAttribute('data-filewhat-id'),
-            filename = e.nextSibling.nextSibling.textContent.replace(/ /g, '').replace(/\n/g, ''),
-            id;
+        var filename = e.nextSibling.nextSibling.textContent.replace(/ /g, '').replace(/\n/g, ''),
+            id = uuid();
 
-        if (isAlreadyInitialized) {
+        // don't continue if our tooltipNode already exists
+        if (!!e.getAttribute('data-filewhat-id')) {
             return;
         }
 
-        id = uuid();
-
-        collection.set(id, {
-            render: populateInfoTooltip,
+        // keep track of tooltips by id and activity
+        tooltips.set(id, {
             active: false
         });
+
+        // add attributes that allow us to identify this tooltipNode in some element
         e.setAttribute('data-filewhat-id', id);
         e.setAttribute('data-filewhat-filename', filename);
+
+        // add our tooltipNode ui functionality to the element
         e.onmouseenter = onMouseEnter;
         e.onmouseleave = onMouseLeave;
     });
 }
 
-initialize();
+init();
+
+// RFC 4122 compliant, from: https://gist.github.com/jcxplorer/823878
+function uuid() {
+    var uuid = "",
+        i, random;
+
+    for (i = 0; i < 32; i++) {
+        random = Math.random() * 16 | 0;
+
+        if (i == 8 || i == 12 || i == 16 || i == 20) {
+            uuid += "-"
+        }
+        uuid += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
+    }
+
+    return uuid;
+}
 
 function onMouseEnter(e) {
     var id = e.target.getAttribute('data-filewhat-id'),
         filename = e.target.getAttribute('data-filewhat-filename'),
         repo_width = window.document.getElementsByClassName("repository-content")[0].offsetWidth,
-        tooltipAction, url;
+        tooltip, url;
     var tooltip_width = ((window.innerWidth - repo_width) / 2) - 10
 
+    // don't continue if the tooltip id doesn't exist, or the tooltip already exists
     if (id === undefined) {
         return;
     }
 
-    tooltipAction = collection.get(id);
+    tooltip = tooltips.get(id);
 
-    if (!tooltipAction || tooltipAction.active){
+    if (!tooltip || tooltip.active){
         return;
     }
 
-    var tooltip = document.createElement('div');
-    tooltip.className = 'filewhat';
-    tooltip.style.width = tooltip_width + 'px';
+    // create the tooltip node, append it to the td node, and then mark this tooltip as active
+    var tooltipNode = document.createElement('div');
+    tooltipNode.className = 'filewhat';
+    tooltipNode.style.width = tooltip_width + 'px';
+    e.target.parentElement.appendChild(tooltipNode);
+    tooltip.active = true;
 
-    tooltipAction.active = true;
-    e.target.parentElement.appendChild(tooltip);
-
-    populateTooltip(tooltip, filename, tooltipAction);
+    buildTooltip(tooltipNode, filename, tooltip);
 }
 
 function onMouseLeave(e){
     var id = e.target.getAttribute('data-filewhat-id'),
         tooltipNode = e.target.parentElement.querySelector('.filewhat');
 
+    // don't continue if either the tooltip id nor the tooltip node doesn't exist
     if (id === undefined || !tooltipNode) {
         return;
     }
@@ -83,23 +94,15 @@ function removeTooltip(id, tooltipNode){
     try {
         tooltipNode.parentElement.removeChild(tooltipNode);
     } catch (e) {
-        console.log("Error when attempting to remove tooltip div");
+        console.log("Error when attempting to remove tooltipNode div");
         console.log(e);
     }
 
-    tooltipAction = collection.get(id);
-    tooltipAction.active = false;
+    tooltip = tooltips.get(id);
+    tooltip.active = false;
 }
 
-function populateTooltip(tooltipNode, filename, tooltipAction){
-    if (typeof tooltipAction.render === 'function'){
-        tooltipAction.render.apply(this, arguments);
-    } else {
-        tooltipNode.style.display = 'none';
-    }
-}
-
-function populateInfoTooltip(tooltipNode, filename, tooltipAction){
+function buildTooltip(tooltipNode, filename){
     var tooltipTemplate = [
         '<div class="filetype-header">',
         filename,
@@ -132,13 +135,3 @@ function populateInfoTooltip(tooltipNode, filename, tooltipAction){
 
     xmlhttp.send(null);
 }
-
-var callback = function(allmutations){
-    initialize();
-},
-    mo = new MutationObserver(callback),
-    options = {
-        'childList': true,
-        'subtree': true
-    };
-mo.observe(document.body, options);

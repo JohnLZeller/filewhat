@@ -2,16 +2,17 @@
     "name": "FileWhat",
     "version": "1.0.0",
     "description": "Describes common files placed in Github repos via tooltips",
-    "permissions": ["https://www.github.com/*", "https://github.com/*"],
+    "permissions": [
+        "https://www.github.com/*",
+        "https://github.com/*"
+    ],
     "content_scripts": [{
         "matches": ["https://www.github.com/*", "https://github.com/*"],
-        "js": ["extension.js"],
-        "css": ["styles.css"]
+        "js": ["filewhat.js"],
+        "css": ["css/styles.css"]
     }],
-    "background": {
-        "scripts": [ "background.js" ],
-        "persistent": false
-    },
     "manifest_version": 2,
-    "web_accessible_resources": ["descriptions/*"]
+    "web_accessible_resources": [
+        "descriptions/*"
+    ]
 }

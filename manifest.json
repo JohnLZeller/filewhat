@@ -4,11 +4,21 @@
     "description": "Describes common files placed in Github repos via tooltips",
     "permissions": [
         "https://www.github.com/*",
-        "https://github.com/*"
+        "https://github.com/*",
+        "storage"
     ],
+    "browser_action": {
+     "default_popup": "static/settings.html"
+    },
     "content_scripts": [{
-        "matches": ["https://www.github.com/*", "https://github.com/*"],
-        "js": ["filewhat.js"],
+        "matches": [
+            "https://www.github.com/*",
+            "https://github.com/*"
+        ],
+        "js": [
+            "js/filewhat.js",
+            "js/file_extensions.js"
+        ],
         "css": ["css/styles.css"]
     }],
     "manifest_version": 2,

@@ -1,3 +1,5 @@
+/* Tooltips */
+
 .filewhat {
     background-color: rgba(0, 0, 0, 0.8);
     border-bottom-left-radius: 3px;
@@ -53,4 +55,10 @@
 
 .news .alert {
     overflow: inherit !important;
+}
+
+/* Settings */
+
+#container {
+    width: 300px;
 }

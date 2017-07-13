@@ -49,7 +49,7 @@ function onMouseEnter(e) {
     var id = e.target.getAttribute('data-filewhat-id'),
         filename = e.target.getAttribute('data-filewhat-filename'),
         repo_width = document.getElementsByClassName("repository-content")[0].offsetWidth,
-        tooltip, url;
+        tooltip, url, blacklist_files;
     var tooltip_width = ((window.innerWidth - repo_width) / 2) - 10
 
     // don't continue if the tooltip id doesn't exist, or the tooltip already exists
@@ -63,15 +63,21 @@ function onMouseEnter(e) {
         return;
     }
 
-    // create the tooltip node, append it to the td node, and then mark this tooltip as active
-    var tooltipNode = document.createElement('div');
-    tooltipNode.className = 'filewhat';
-    tooltipNode.style.width = tooltip_width + 'px';
-    tooltipNode.style.opacity = 0;
-    e.target.parentElement.appendChild(tooltipNode);
-    tooltip.active = true;
+    // only show if this filename/type is not blacklisted
+    chrome.storage.sync.get(['blacklist_files'], function(settings) {
+        blacklist_files = settings['blacklist_files'].replace(/ /g, '').split(",");
+        if (blacklist_files.indexOf(filename) < 0) {
+            // create the tooltip node, append it to the td node, and then mark this tooltip as active
+            var tooltipNode = document.createElement('div');
+            tooltipNode.className = 'filewhat';
+            tooltipNode.style.width = tooltip_width + 'px';
+            tooltipNode.style.opacity = 0;
+            e.target.parentElement.appendChild(tooltipNode);
+            tooltip.active = true;
 
-    buildTooltip(tooltipNode, filename, tooltip);
+            buildTooltip(tooltipNode, filename, tooltip);
+        }
+    });
 }
 
 function onMouseLeave(e){

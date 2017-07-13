@@ -16,20 +16,17 @@ function $(id) {
  * @param settings{object} A settings object, as returned from |get()| or the
  * |onchanged| event.
  */
-function updateUI(settings) {
-  document.getElementById('show_generic_filetypes').checked = settings['show_generic_filetypes'];
-}
+function initUI(settings) {
+  if (settings['show_generic_filetypes']) {
+    $('show_generic_filetypes').checked = settings['show_generic_filetypes'];
+  } else {
+    $('show_generic_filetypes').checked = false;
+  }
 
-/**
- * Wrapper for |updateUI| which is used as callback for the |get()| method and
- * which logs the result.
- * If there was an error getting the preference, does nothing.
- *
- * @param settings{object} A settings object, as returned from |get()|.
- */
-function updateUIFromGet(settings) {
-  if (settings) {
-    updateUI(settings);
+  if (settings['blacklist_files']) {
+    $('blacklist_files').value = settings['blacklist_files'];
+  } else {
+    $('blacklist_files').value = '';
   }
 }
 
@@ -37,11 +34,13 @@ function updateUIFromGet(settings) {
  * Initializes the UI.
  */
 function init() {
-  store.sync.get(['show_generic_filetypes'], updateUIFromGet);
-  store.onChanged.addListener(updateUI);
+  store.sync.get(['show_generic_filetypes', 'blacklist_files'], initUI);
 
   $('show_generic_filetypes').addEventListener('click', function () {
-    setPrefValue(this.checked);
+    setPrefValue('show_generic_filetypes', this.checked);
+  });
+  $('blacklist_files_submit').addEventListener('click', function () {
+    setPrefValue('blacklist_files', $('blacklist_files').value);
   });
 }
 
@@ -50,8 +49,18 @@ function init() {
  *
  * @param enabled{boolean} The new preference value.
  */
-function setPrefValue(enabled) {
-  store.sync.set({'show_generic_filetypes': enabled});
+function setPrefValue(key, value) {
+  var package = {};
+
+  if (key == 'blacklist_files') {
+    $('save_status').innerHTML = "Saved :)";
+    setTimeout(function() {
+      $('save_status').innerHTML = "";
+    }, 1500);
+  }
+
+  package[key] = value;
+  store.sync.set(package);
 }
 
 // Call `init` to kick things off.

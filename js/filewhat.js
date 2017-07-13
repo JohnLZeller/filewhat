@@ -89,7 +89,9 @@ function onMouseLeave(e){
         return;
     }
 
-    removeTooltip(id, tooltipNode);
+    setTimeout(function() {
+        fadeOut(id, tooltipNode, 2000);
+    }, 500);
 }
 
 function removeTooltip(id, tooltipNode){
@@ -99,6 +101,7 @@ function removeTooltip(id, tooltipNode){
 
     try {
         tooltipNode.parentElement.removeChild(tooltipNode);
+        tooltipNode.parentElement.onclick = null;
     } catch (e) {
         console.log("Error when attempting to remove tooltipNode div");
         console.log(e);
@@ -123,17 +126,26 @@ function buildTooltip(tooltipNode, filename){
 
 function fetchDescription(tooltipNode, tooltipTemplate, filename){
     var descURL = chrome.runtime.getURL("descriptions/" + filename + ".html"),
-        xmlhttp, extDesc, ext, showGenericFiletypes, id;
+        xmlhttp, extDesc, ext, showGenericFiletypes, id, pieces, url;
 
     xmlhttp = new XMLHttpRequest();
     xmlhttp.open('GET', descURL, true);
 
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.status < 400 && xmlhttp.responseText && xmlhttp.readyState == 4){
-            tooltipNode.innerHTML = tooltipTemplate.replace(
-                '%filetype-description%', xmlhttp.responseText
-            );
-            tooltipNode.style.opacity = null;
+            pieces = xmlhttp.responseText.split("\n");
+            url = pieces.pop(-1)
+            if (url.startsWith('http')) {
+                tooltipNode.innerHTML = tooltipTemplate.replace(
+                    '%filetype-description%', pieces.join('\n')
+                );
+                tooltipNode.parentElement.onclick = function(){ window.open(url, "_blank"); };
+                tooltipNode.style.opacity = null;
+            } else {
+                tooltipNode.innerHTML = tooltipTemplate.replace(
+                    '%filetype-description%', xmlhttp.responseText
+                );
+            }
         }
     };
 
@@ -152,8 +164,9 @@ function fetchDescription(tooltipNode, tooltipTemplate, filename){
                     filename, extDesc['name'] + ' file'
                 );
                 tooltipNode.innerHTML = tooltipTemplate.replace(
-                    '%filetype-description%', extDesc['description'] + '<br><br>' + extDesc['link']
+                    '%filetype-description%', extDesc['description']
                 );
+                tooltipNode.parentElement.onclick = function(){ window.open(extDesc['link'], "_blank"); };
                 tooltipNode.style.opacity = null;
             } else {
                 id = document.getElementsByClassName('filewhat')[0].parentElement.firstElementChild.getAttribute('data-filewhat-id');
@@ -163,6 +176,25 @@ function fetchDescription(tooltipNode, tooltipTemplate, filename){
     };
 
     xmlhttp.send(null);
+}
+
+function fadeOut(id, e, ms) {
+    var stepSize = 30;
+    var steps = ms / stepSize;
+    var decrement = 1 / (ms / steps);
+    var current = 1;
+
+    function next() {
+        current = current - decrement;
+        e.style.opacity = current;
+        if (current > 0) {
+            setTimeout(next, stepSize);
+        } else {
+            removeTooltip(id, e);
+        }
+    }
+
+    next();
 }
 
 init();

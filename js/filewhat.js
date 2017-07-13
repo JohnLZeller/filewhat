@@ -89,9 +89,7 @@ function onMouseLeave(e){
         return;
     }
 
-    setTimeout(function() {
-        fadeOut(id, tooltipNode, 2000);
-    }, 500);
+    removeTooltip(id, tooltipNode);
 }
 
 function removeTooltip(id, tooltipNode){
@@ -100,8 +98,8 @@ function removeTooltip(id, tooltipNode){
     }
 
     try {
-        tooltipNode.parentElement.removeChild(tooltipNode);
         tooltipNode.parentElement.onclick = null;
+        tooltipNode.parentElement.removeChild(tooltipNode);
     } catch (e) {
         console.log("Error when attempting to remove tooltipNode div");
         console.log(e);
@@ -136,16 +134,17 @@ function fetchDescription(tooltipNode, tooltipTemplate, filename){
             pieces = xmlhttp.responseText.split("\n");
             url = pieces.pop(-1)
             if (url.startsWith('http')) {
+                pieces.pop(-1);  // remove <br><br>
                 tooltipNode.innerHTML = tooltipTemplate.replace(
                     '%filetype-description%', pieces.join('\n')
                 );
                 tooltipNode.parentElement.onclick = function(){ window.open(url, "_blank"); };
-                tooltipNode.style.opacity = null;
             } else {
                 tooltipNode.innerHTML = tooltipTemplate.replace(
                     '%filetype-description%', xmlhttp.responseText
                 );
             }
+            tooltipNode.style.opacity = null;
         }
     };
 
@@ -176,25 +175,6 @@ function fetchDescription(tooltipNode, tooltipTemplate, filename){
     };
 
     xmlhttp.send(null);
-}
-
-function fadeOut(id, e, ms) {
-    var stepSize = 30;
-    var steps = ms / stepSize;
-    var decrement = 1 / (ms / steps);
-    var current = 1;
-
-    function next() {
-        current = current - decrement;
-        e.style.opacity = current;
-        if (current > 0) {
-            setTimeout(next, stepSize);
-        } else {
-            removeTooltip(id, e);
-        }
-    }
-
-    next();
 }
 
 init();

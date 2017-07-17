@@ -112,8 +112,13 @@ function buildTooltip(tooltipNode, filename){
 }
 
 function fetchDescription(tooltipNode, tooltipTemplate, filename){
-    var descURL = chrome.runtime.getURL("descriptions/" + filename + ".html"),
-        xmlhttp, extDesc, ext, showGenericFiletypes, id, pieces, url;
+    var descURL, xmlhttp, extDesc, ext, showGenericFiletypes, id, pieces, url;
+
+    // encode filename
+    if (filename.startsWith('.')) {
+        filename = "dot_" + filename.substring(1)
+    }
+    descURL = chrome.runtime.getURL("descriptions/" + filename + ".html");
 
     xmlhttp = new XMLHttpRequest();
     xmlhttp.open('GET', descURL, true);

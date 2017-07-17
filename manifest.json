@@ -1,6 +1,6 @@
 {
     "name": "FileWhat",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Describes common files placed in Github repos via tooltips",
     "permissions": [
         "https://www.github.com/*",

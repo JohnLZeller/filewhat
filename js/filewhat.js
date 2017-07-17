@@ -44,7 +44,8 @@ function onMouseEnter(e) {
     var id = e.target.getAttribute('data-filewhat-id'),
         filename = e.target.getAttribute('data-filewhat-filename'),
         repo_width = document.getElementsByClassName("repository-content")[0].offsetWidth,
-        url, blacklist_files;
+        blacklist_files = [],
+        url;
     var tooltip_width = ((window.innerWidth - repo_width) / 2) - 10
 
     // don't continue if the tooltip id doesn't exist, or the tooltip already exists
@@ -54,7 +55,10 @@ function onMouseEnter(e) {
 
     // only show if this filename/type is not blacklisted
     chrome.storage.sync.get(['blacklist_files'], function(settings) {
-        blacklist_files = settings['blacklist_files'].replace(/ /g, '').split(",");
+        if (settings['blacklist_files']) {
+            blacklist_files = settings['blacklist_files'].replace(/ /g, '').split(",");
+        }
+
         if (blacklist_files.indexOf(filename) < 0) {
             // create the tooltip node, append it to the td node, and then mark this tooltip as active
             var tooltipNode = document.createElement('div');

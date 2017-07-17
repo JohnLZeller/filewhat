@@ -24,3 +24,7 @@ There is a set of settings available to you:
 * Add a comma-separated list of strings representing filenames that you would like to exclude from showing tooltips. For example: `README.md,manifest.json`
 
 Also, all files that show a tooltip will also make the file icon clickable and it will open a new tab, going to a link with more information about the type of file.
+
+## Disclaimer
+
+The [Octotips](https://github.com/dnbard/octotips) extension was used as a reference for building this extension and therefore various pieces are copied from there.

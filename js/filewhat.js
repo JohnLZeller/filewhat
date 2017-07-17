@@ -1,5 +1,5 @@
-var tooltips = new Map(),
-    store = chrome.storage;
+var store = chrome.storage,
+    observer = new MutationObserver(function() { init(); });
 
 function init(){
     var files = document.getElementsByClassName("octicon-file-text");
@@ -12,11 +12,6 @@ function init(){
         if (!!e.getAttribute('data-filewhat-id')) {
             return;
         }
-
-        // keep track of tooltips by id and activity
-        tooltips.set(id, {
-            active: false
-        });
 
         // add attributes that allow us to identify this tooltipNode in some element
         e.setAttribute('data-filewhat-id', id);
@@ -49,17 +44,11 @@ function onMouseEnter(e) {
     var id = e.target.getAttribute('data-filewhat-id'),
         filename = e.target.getAttribute('data-filewhat-filename'),
         repo_width = document.getElementsByClassName("repository-content")[0].offsetWidth,
-        tooltip, url, blacklist_files;
+        url, blacklist_files;
     var tooltip_width = ((window.innerWidth - repo_width) / 2) - 10
 
     // don't continue if the tooltip id doesn't exist, or the tooltip already exists
     if (id === undefined) {
-        return;
-    }
-
-    tooltip = tooltips.get(id);
-
-    if (!tooltip || tooltip.active){
         return;
     }
 
@@ -73,9 +62,8 @@ function onMouseEnter(e) {
             tooltipNode.style.width = tooltip_width + 'px';
             tooltipNode.style.opacity = 0;
             e.target.parentElement.appendChild(tooltipNode);
-            tooltip.active = true;
 
-            buildTooltip(tooltipNode, filename, tooltip);
+            buildTooltip(tooltipNode, filename);
         }
     });
 }
@@ -104,9 +92,6 @@ function removeTooltip(id, tooltipNode){
         console.log("Error when attempting to remove tooltipNode div");
         console.log(e);
     }
-
-    tooltip = tooltips.get(id);
-    tooltip.active = false;
 }
 
 function buildTooltip(tooltipNode, filename){
@@ -178,3 +163,10 @@ function fetchDescription(tooltipNode, tooltipTemplate, filename){
 }
 
 init();
+
+// Setup a mutation observer to look for mutations on the document.body because Github uses pjax to build new pages without refreshing
+// and once a page is being rebuilt, we need to re-initialize ourselves.
+observer.observe(document.body, {
+    'childList': true,
+    'subtree': true
+});
